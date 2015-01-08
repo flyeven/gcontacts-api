@@ -1,0 +1,35 @@
+{
+  "name": "google-contacts-api",
+  "description": "Implementation of CRUD operations against Google Contacts via promises",
+  "version": "0.0.1",
+  "keywords": [
+    "promise",
+    "google api",
+    "contacts",
+    "bluebird"
+  ],
+  "homepage": "https://bitbucket.org/controlly/google-contacts-api",
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:controlly/google-contacts-api.git"
+  },
+  "private": true,
+  "license": "to-be-specified",
+  "author": {
+    "name": "Dimitrios C. Michalakos",
+    "email": "dimitris@jmike.gr",
+    "url": "https://bitbucket.org/jmike"
+  },
+  "devDependencies": {
+    "bluebird": "2.6.2",
+    "request": "2.51.0"
+  },
+  "_npmVersion": "1.4.28",
+  "_nodeVersion": "0.10.35",
+  "maintainers": [
+    {
+      "name": "tyler46",
+      "email": "mail.doctor46@gmail.com"
+    }
+  ]
+}
