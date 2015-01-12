@@ -8,28 +8,32 @@
     "contacts",
     "bluebird"
   ],
+  "main": "src/GoogleContactsApi.js",
   "homepage": "https://bitbucket.org/controlly/google-contacts-api",
   "repository": {
     "type": "git",
     "url": "git@bitbucket.org:controlly/google-contacts-api.git"
   },
   "private": true,
-  "license": "to-be-specified",
+  "license": "commercial",
   "author": {
     "name": "Dimitrios C. Michalakos",
     "email": "dimitris@jmike.gr",
     "url": "https://bitbucket.org/jmike"
   },
-  "devDependencies": {
-    "bluebird": "2.6.2",
-    "request": "2.51.0"
-  },
-  "_npmVersion": "1.4.28",
-  "_nodeVersion": "0.10.35",
   "maintainers": [
     {
       "name": "tyler46",
       "email": "mail.doctor46@gmail.com"
     }
-  ]
+  ],
+  "dependencies": {
+    "bluebird": "^2.6.4",
+    "request": "^2.51.0"
+  },
+  "devDependencies": {
+    "dotenv": "^0.4.0"
+  },
+  "_npmVersion": "1.4.28",
+  "_nodeVersion": "0.10.35"
 }
