@@ -28,7 +28,7 @@ GoogleContactsApiClient.prototype.getAuthorizationUrl = function () {
       response_type: 'code',
       client_id: this.clientId,
       redirect_uri: this.redirectUrl,
-      scope: 'email profile',
+      scope: 'https://www.google.com/m8/feeds',
       approval_prompt: 'force'
     }
   });
@@ -74,6 +74,7 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
 
   return new Promise(resolver)
     .then(function (response) {
+      console.log('Response is: ', response);
       _this._token = response.access_token;
     })
     .nodeify(callback);
