@@ -44,6 +44,7 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
   var _this = this;
   var options;
   var resolver;
+  var body;
 
   // set request options
   options = {
@@ -74,10 +75,51 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
 
   return new Promise(resolver)
     .then(function (response) {
-      console.log('Response is: ', response);
-      _this._token = response.access_token;
+      body = JSON.parse(response);
+      _this._token = body.access_token;
     })
     .nodeify(callback);
 };
+
+/**
+ * Retrieves from Google API the (first page) of user's contacts.
+ * @param {function} [callback] optional callback function with (err) arguments
+ * @return {Promise}
+ */
+GoogleContactsApiClient.prototype.getContacts = function (callback) {
+  var options;
+  var resolver;
+
+  // set /GET request options
+  options = {
+    method: 'GET',
+    // Use of query parameter v=3.0 to ask for v3 google api.
+    uri: 'https://www.google.com/m8/feeds/contacts/default/full?v=3.0',
+    headers: {
+      'Authorization': 'Bearer ' + this._token
+    }
+  };
+
+  resolver = function (resolve, reject) {
+    request(options, function (err, response, data) {
+      var statusCode = response.statusCode;
+
+      if (err) return reject(err);
+
+      if (statusCode >= 400 || data.error_description) {
+        return reject(new Error(data.error_description));
+      }
+
+      resolve(data);
+    });
+  };
+
+  return new Promise(resolver)
+    .then(function (response) {
+      console.log('Response is: ', response);
+    })
+    .nodeify(callback);
+};
+
 
 module.exports = GoogleContactsApiClient;

@@ -12,9 +12,13 @@ client = new GoogleContacts({
 
 console.log(client.getAuthorizationUrl());
 
-client.authorize('4/15aRk4gneDnVqR715muTcJ439Ojd07hJu4PBM5A6ZMI.op6rtnmFvZAToiIBeO6P2m-4lBvAlQI')
+client.authorize('4/B72FrpShzUEnftTFQGU4UkjXA-tIrSR78xaODMqV9tM.8nFgJcZGFwUfoiIBeO6P2m_G1zTVlQI')
   .then(function () {
     console.log('authorized');
+    return client.getContacts()
+  })
+  .then(function() {
+    console.log('got contacts');
   })
   .catch(function (err) {
     console.error(err);
