@@ -44,7 +44,6 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
   var _this = this;
   var options;
   var resolver;
-  var body;
 
   // set request options
   options = {
@@ -56,7 +55,8 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
       client_id: this.clientId,
       client_secret: this.clientSecret,
       redirect_uri: this.redirectUrl
-    }
+    },
+    json: true
   };
 
   resolver = function (resolve, reject) {
@@ -75,8 +75,7 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
 
   return new Promise(resolver)
     .then(function (response) {
-      body = JSON.parse(response);
-      _this._token = body.access_token;
+      _this._token = response.access_token;
     })
     .nodeify(callback);
 };
