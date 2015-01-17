@@ -1,6 +1,7 @@
 var url = require('url');
 var Promise = require('bluebird');
 var request = require('request');
+var querystring = require('querystring');
 
 /**
  * Constructs a new Google Contacts API client.
@@ -82,18 +83,24 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
 
 /**
  * Retrieves from Google API the (first page) of user's contacts.
+ * @param {object} [params] optional object that contains query parameters.
+ * Available parameters are defined at
+ * https://developers.google.com/google-apps/contacts/v3/reference#Parameters.
  * @param {function} [callback] optional callback function with (err) arguments
  * @return {Promise}
  */
-GoogleContactsApiClient.prototype.getContacts = function (callback) {
+GoogleContactsApiClient.prototype.getContacts = function (params, callback) {
   var options;
   var resolver;
+  var queryParams;
+
+  queryParams = querystring.stringify(params);
 
   // set /GET request options
   options = {
     method: 'GET',
     // Use of query parameter v=3.0 to ask for v3 google api.
-    uri: 'https://www.google.com/m8/feeds/contacts/default/full?v=3.0',
+    uri: 'https://www.google.com/m8/feeds/contacts/default/full?v=3.0' + ((params) ? '&' + queryParams : ''),
     headers: {
       'Authorization': 'Bearer ' + this._token
     }
