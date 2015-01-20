@@ -32,7 +32,7 @@ Source code contributions are most welcome. The following rules apply:
 
 1. JavaScript source code needs to follow the [Airbnb Style Guide](https://github.com/airbnb/javascript);
 2. Functions need to be well documented using [JSdoc](http://usejsdoc.org/);
-3. Unit tests are obligatory.
+3. Unit tests are necessary.
 
 ## Support
 
@@ -42,4 +42,4 @@ If you are having issues with this library, please let us know.
 
 ## License
 
-The project is licensed under the MIT license.
+The project is licensed under the [MIT license](http://opensource.org/licenses/MIT).
