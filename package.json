@@ -1,6 +1,6 @@
 {
-  "name": "google-contacts-api",
-  "description": "Implementation of CRUD operations against Google Contacts via promises",
+  "name": "gcontacts-api",
+  "description": "Google Contacts API for Node.js",
   "version": "0.0.1",
   "keywords": [
     "promise",
@@ -14,17 +14,17 @@
     "type": "git",
     "url": "git@bitbucket.org:controlly/google-contacts-api.git"
   },
-  "private": true,
-  "license": "commercial",
+  "license": "MIT",
   "author": {
     "name": "Dimitrios C. Michalakos",
     "email": "dimitris@jmike.gr",
-    "url": "https://bitbucket.org/jmike"
+    "url": "https://github.com/jmike"
   },
   "maintainers": [
     {
       "name": "tyler46",
-      "email": "mail.doctor46@gmail.com"
+      "email": "mail.doctor46@gmail.com",
+      "url": "https://github.com/tyler46"
     }
   ],
   "dependencies": {
