@@ -8,7 +8,7 @@ The gContacts API is a Google Contacts API for Node.js.
 --
 ```
 
-For further information on how to use this library please refer to the API docs.
+For further information on how to use this library please refer to the [API docs](https://github.com/controlly/gcontacts-api/wiki/API-reference).
 
 ## Features
 
