@@ -33,7 +33,9 @@
     "request": "^2.51.0"
   },
   "devDependencies": {
-    "dotenv": "^0.4.0"
+    "chai": "^1.10.0",
+    "dotenv": "^0.4.0",
+    "mocha": "^2.1.0"
   },
   "_npmVersion": "1.4.28",
   "_nodeVersion": "0.10.35"
