@@ -1,71 +1,100 @@
 var url = require('url');
 var Promise = require('bluebird');
 var request = require('request');
-var querystring = require('querystring');
+var _ = require('lodash');
 
-/**
- * Constructs a new Google Contacts API client.
- * @param {object} props application properties.
- * @param {object} props.clientId
- * @param {object} props.clientSecret
- * @constructor
- */
-function GoogleContactsApiClient(props) {
-  this.clientId = props.clientId;
-  this.clientSecret = props.clientSecret;
-  this.redirectUrl = props.redirectUrl;
+function GoogleContacts(props) {
+  this._clientId = props.clientId;
+  this._clientSecret = props.clientSecret;
+  this._redirectUrl = props.redirectUrl;
 }
 
-/**
- * Generates and returns an auth URL to redirect the user.
- * @return {string}
- */
-GoogleContactsApiClient.prototype.getAuthorizationUrl = function () {
+GoogleContacts.prototype.getAuthorizationUrl = function () {
   return url.format({
     protocol: 'https',
     host: 'accounts.google.com',
     pathname: '/o/oauth2/auth',
     query: {
       response_type: 'code',
-      client_id: this.clientId,
-      redirect_uri: this.redirectUrl,
+      client_id: this._clientId,
+      redirect_uri: this._redirectUrl,
       scope: 'https://www.google.com/m8/feeds',
       approval_prompt: 'force'
     }
   });
 };
 
-/**
- * Authorizes the client to access a pararticular user's contacts using the given token.
- * @param {string} code
- * @param {function} [callback] optional callback function with (err) arguments
- * @return {Promise}
- */
-GoogleContactsApiClient.prototype.authorize = function (code, callback) {
+GoogleContacts.prototype.authorize = function (token, callback) {
   var _this = this;
-  var options;
   var resolver;
 
-  // set request options
-  options = {
-    method: 'POST',
-    uri: 'https://accounts.google.com/o/oauth2/token',
-    form: {
-      grant_type: 'authorization_code',
-      code: code,
-      client_id: this.clientId,
-      client_secret: this.clientSecret,
-      redirect_uri: this.redirectUrl
-    },
-    json: true
-  };
-
   resolver = function (resolve, reject) {
-    request(options, function (err, response, data) {
+    var params;
+
+    params = {
+      method: 'POST',
+      uri: 'https://accounts.google.com/o/oauth2/token',
+      form: {
+        grant_type: 'authorization_code',
+        code: token,
+        client_id: _this._clientId,
+        client_secret: _this._clientSecret,
+        redirect_uri: _this._redirectUrl
+      },
+      json: true
+    };
+
+    request(params, function (err, response, data) {
       var statusCode = response.statusCode;
 
       if (err) return reject(err);
 
+      statusCode = response.statusCode;
+      if (statusCode >= 400 || data.error_description) {
+        return reject(new Error(data.error_description));
+      }
+
+      // update client token
+      _this._token = data.access_token;
+
+      resolve(data);
+    });
+  };
+
+  return new Promise(resolver).nodeify(callback);
+};
+
+GoogleContacts.prototype.getContacts = function (options, callback) {
+  var _this = this;
+  var resolver;
+
+  // handle optional "options" param
+  if (typeof(options) === 'function') {
+    callback = options;
+    options = {};
+  } else if (options === undefined) {
+    options = {};
+  }
+
+  resolver = function (resolve, reject) {
+    var params;
+
+    params = {
+      method: 'GET',
+      uri: 'https://www.google.com/m8/feeds/contacts/default/full',
+      qs: {v: '3.0'},
+      headers: {'Authorization': 'Bearer ' + _this._token}
+    };
+
+    // append options to querystring
+    params.qs = _.extend(params.qs, options);
+
+    request(params, function (err, response, data) {
+      var statusCode;
+
+      if (err) return reject(err);
+
+      statusCode = response.statusCode;
       if (statusCode >= 400 || data.error_description) {
         return reject(new Error(data.error_description));
       }
@@ -74,58 +103,8 @@ GoogleContactsApiClient.prototype.authorize = function (code, callback) {
     });
   };
 
-  return new Promise(resolver)
-    .then(function (response) {
-      _this._token = response.access_token;
-    })
-    .nodeify(callback);
-};
-
-/**
- * Retrieves from Google API the (first page) of user's contacts.
- * @param {object} [params] optional object that contains query parameters.
- * Available parameters are defined at
- * https://developers.google.com/google-apps/contacts/v3/reference#Parameters.
- * @param {function} [callback] optional callback function with (err) arguments
- * @return {Promise}
- */
-GoogleContactsApiClient.prototype.getContacts = function (params, callback) {
-  var options;
-  var resolver;
-  var queryParams;
-
-  queryParams = querystring.stringify(params);
-
-  // set /GET request options
-  options = {
-    method: 'GET',
-    // Use of query parameter v=3.0 to ask for v3 google api.
-    uri: 'https://www.google.com/m8/feeds/contacts/default/full?v=3.0' + ((params) ? '&' + queryParams : ''),
-    headers: {
-      'Authorization': 'Bearer ' + this._token
-    }
-  };
-
-  resolver = function (resolve, reject) {
-    request(options, function (err, response, data) {
-      var statusCode = response.statusCode;
-
-      if (err) return reject(err);
-
-      if (statusCode >= 400 || data.error_description) {
-        return reject(new Error(data.error_description));
-      }
-
-      resolve(data);
-    });
-  };
-
-  return new Promise(resolver)
-    .then(function (response) {
-      console.log('Response is: ', response);
-    })
-    .nodeify(callback);
+  return new Promise(resolver).nodeify(callback);
 };
 
 
-module.exports = GoogleContactsApiClient;
+module.exports = GoogleContacts;
