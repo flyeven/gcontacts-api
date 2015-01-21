@@ -1,18 +1,39 @@
 # gContacts API
 
-The gContacts API is a Google Contacts API for Node.js.
+Google Contacts API client for Node.js.
 
 ## Quick start
 
 ```javascript
---
+var GoogleContacts = require('gcontacts-api');
+
+var gContacts = new GoogleContacts({
+  clientId: '####-####.apps.googleusercontent.com',
+  clientSecret: '###-###',
+  redirectUrl: 'http://www.mywebsite.com/oauth2callback'
+});
+
+var url = gContacts.getAuthorizationUrl();
+
+// redirect user to authorization URL and acquire oAuth access token
+
+gContacts.authorize(token)
+  .then(function () {
+    return gContacts.getContacts();
+  })
+  .then(function (contacts) {
+    // do something with contacts
+  })
+  .catch(function (err) {
+    console.error(err);
+  });
 ```
 
-For further information on how to use this library please refer to the [API docs](https://github.com/controlly/gcontacts-api/wiki/API-reference).
+For further information on how to use this library please refer to the [wiki](https://github.com/controlly/gcontacts-api/wiki).
 
 ## Features
 
-* Google OAuth;
+* OAuth authorization;
 * Basic CRUD functionality;
 * Promise and callback API.
 
@@ -31,8 +52,8 @@ $ npm install gcontacts-api
 Source code contributions are most welcome. The following rules apply:
 
 1. JavaScript source code needs to follow the [Airbnb Style Guide](https://github.com/airbnb/javascript);
-2. Functions need to be well documented using [JSdoc](http://usejsdoc.org/);
-3. Unit tests are necessary.
+2. Functions need to be well documented;
+3. Unit tests are obligatory.
 
 ## Support
 
