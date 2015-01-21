@@ -1,18 +1,18 @@
 {
   "name": "gcontacts-api",
-  "description": "Google Contacts API for Node.js",
+  "description": "Google Contacts API client for Node.js",
   "version": "0.0.1",
   "keywords": [
-    "promise",
-    "google api",
+    "promises",
+    "google",
     "contacts",
     "bluebird"
   ],
-  "main": "src/GoogleContactsApi.js",
-  "homepage": "https://bitbucket.org/controlly/google-contacts-api",
+  "main": "src/GoogleContacts.js",
+  "homepage": "https://github.com/controlly/gcontacts-api",
   "repository": {
     "type": "git",
-    "url": "git@bitbucket.org:controlly/google-contacts-api.git"
+    "url": "git@github.com:controlly/gcontacts-api.git"
   },
   "license": "MIT",
   "author": {
