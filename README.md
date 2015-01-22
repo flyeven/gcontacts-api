@@ -2,6 +2,8 @@
 
 Google Contacts API client for Node.js.
 
+[![Build Status](https://travis-ci.org/controlly/gcontacts-api.svg)](https://travis-ci.org/controlly/gcontacts-api)
+
 ## Quick start
 
 ```javascript
