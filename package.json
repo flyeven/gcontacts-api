@@ -9,6 +9,9 @@
     "bluebird"
   ],
   "main": "src/GoogleContacts.js",
+  "scripts": {
+    "test": "node test/index.js"
+  },
   "homepage": "https://github.com/controlly/gcontacts-api",
   "repository": {
     "type": "git",
@@ -29,8 +32,10 @@
   ],
   "dependencies": {
     "bluebird": "^2.6.4",
+    "is-url": "^1.2.0",
     "lodash": "^2.4.1",
-    "request": "^2.51.0"
+    "request": "^2.51.0",
+    "type-of": "^2.0.1"
   },
   "devDependencies": {
     "chai": "^1.10.0",

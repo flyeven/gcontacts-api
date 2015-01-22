@@ -1,15 +1,33 @@
 var url = require('url');
 var Promise = require('bluebird');
 var request = require('request');
+var isUrl = require('is-url');
+var type = require('type-of');
 var _ = require('lodash');
 
 function GoogleContacts(props) {
+  if (!_.isPlainObject(props)) {
+    throw new Error('Invalid props argument; expected object, received ' + type(props));
+  }
+
+  if (!_.isString(props.clientId)) {
+    throw new Error('Invalid clientId property; expected string, received ' + type(props.clientId));
+  }
+
+  if (!_.isString(props.clientSecret)) {
+    throw new Error('Invalid clientSecret property; expected string, received ' + type(props.clientSecret));
+  }
+
+  if (!isUrl(props.redirectUrl)) {
+    throw new Error('Invalid redirectUrl property; expected string, received ' + type(props.redirectUrl));
+  }
+
   this._clientId = props.clientId;
   this._clientSecret = props.clientSecret;
   this._redirectUrl = props.redirectUrl;
 }
 
-GoogleContacts.prototype.getAuthorizationUrl = function () {
+GoogleContacts.prototype.getAuthUrl = function () {
   return url.format({
     protocol: 'https',
     host: 'accounts.google.com',
@@ -27,6 +45,10 @@ GoogleContacts.prototype.getAuthorizationUrl = function () {
 GoogleContacts.prototype.authorize = function (token, callback) {
   var _this = this;
   var resolver;
+
+  if (!_.isString(token)) {
+    throw new Error('Invalid token argument; expected string, received ' + type(token));
+  }
 
   resolver = function (resolve, reject) {
     var params;
@@ -66,15 +88,25 @@ GoogleContacts.prototype.authorize = function (token, callback) {
 
 GoogleContacts.prototype.getContacts = function (options, callback) {
   var _this = this;
+  var limit;
+  var offset;
   var resolver;
 
   // handle optional "options" param
-  if (typeof(options) === 'function') {
+  if (_.isFunction(options)) {
     callback = options;
     options = {};
-  } else if (options === undefined) {
+  } else if (_.isUndefined(options)) {
     options = {};
+  } else if (!_.isPlainObject(options)) {
+    throw new Error('Invalid options argument; expected object, received ' + type(options));
   }
+
+  // set default options
+  options = _.default(options, {
+    limit: 100,
+    offset: 0
+  });
 
   resolver = function (resolve, reject) {
     var params;
@@ -87,7 +119,10 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
     };
 
     // append options to querystring
-    params.qs = _.extend(params.qs, options);
+    params.qs = _.extend(params.qs, {
+      'max-results': options.limit,
+      'start-index': options.offset + 1, // 1-based index
+    });
 
     request(params, function (err, response, data) {
       var statusCode;
