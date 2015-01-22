@@ -1,33 +1,19 @@
-// load environmental variables
-require('dotenv').load();
+var path = require('path');
+var Mocha = require('mocha');
+var mocha;
 
-var GoogleContacts = require('../');
-var client;
-var params;
-
-client = new GoogleContacts({
-  clientId: process.env.CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET,
-  redirectUrl: process.env.REDIRECT_URL,
+// init mocha
+mocha = new Mocha({
+  reporter: 'spec',
+  timeout: 30000 // 30 secs
 });
 
-params = {
-  'max-results': 200,
-  'start-index': 1, // 1-based index
-  'alt': 'json'
-};
+// load the test files
+mocha.addFile(path.resolve(__dirname, './api'));
 
-
-console.log(client.getAuthorizationUrl());
-
-client.authorize('4/2EXCbpt7M331re2EtWEqkptTSaca7UFp5j2R-RR9xc4.ov3hKfDntFceoiIBeO6P2m8wmkfvlQI')
-  .then(function () {
-    console.log('authorized');
-    return client.getContacts(params)
-  })
-  .then(function() {
-    console.log('got contacts');
-  })
-  .catch(function (err) {
-    console.error(err);
+// run the tests
+mocha.run(function (failures) {
+  process.on('exit', function () {
+    process.exit(failures);
   });
+});
