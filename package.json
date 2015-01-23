@@ -1,38 +1,46 @@
 {
-  "name": "google-contacts-api",
-  "description": "Implementation of CRUD operations against Google Contacts via promises",
+  "name": "gcontacts-api",
+  "description": "Google Contacts API client for Node.js",
   "version": "0.0.1",
   "keywords": [
-    "promise",
-    "google api",
+    "promises",
+    "google",
     "contacts",
     "bluebird"
   ],
-  "main": "src/GoogleContactsApi.js",
-  "homepage": "https://bitbucket.org/controlly/google-contacts-api",
+  "main": "src/GoogleContacts.js",
+  "scripts": {
+    "test": "node test/index.js"
+  },
+  "homepage": "https://github.com/controlly/gcontacts-api",
   "repository": {
     "type": "git",
-    "url": "git@bitbucket.org:controlly/google-contacts-api.git"
+    "url": "git@github.com:controlly/gcontacts-api.git"
   },
-  "private": true,
-  "license": "commercial",
+  "license": "MIT",
   "author": {
     "name": "Dimitrios C. Michalakos",
     "email": "dimitris@jmike.gr",
-    "url": "https://bitbucket.org/jmike"
+    "url": "https://github.com/jmike"
   },
   "maintainers": [
     {
       "name": "tyler46",
-      "email": "mail.doctor46@gmail.com"
+      "email": "mail.doctor46@gmail.com",
+      "url": "https://github.com/tyler46"
     }
   ],
   "dependencies": {
-    "bluebird": "^2.6.4",
-    "request": "^2.51.0"
+    "bluebird": "^2.8.2",
+    "is-url": "^1.2.0",
+    "lodash": "^2.4.1",
+    "request": "^2.51.0",
+    "type-of": "^2.0.1"
   },
   "devDependencies": {
-    "dotenv": "^0.4.0"
+    "chai": "^1.10.0",
+    "dotenv": "^0.4.0",
+    "mocha": "^2.1.0"
   },
   "_npmVersion": "1.4.28",
   "_nodeVersion": "0.10.35"

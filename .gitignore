@@ -1,5 +1,6 @@
 node_modules/
 .env
+.DS_Store
 
 # file needed to run in order to get a valid code
 server.js
