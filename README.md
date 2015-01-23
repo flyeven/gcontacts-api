@@ -15,7 +15,7 @@ var gContacts = new GoogleContacts({
   redirectUrl: 'http://www.mywebsite.com/oauth2callback'
 });
 
-var url = gContacts.getAuthorizationUrl();
+var url = gContacts.getAuthUrl();
 
 // redirect user to authorization URL and acquire oAuth access token
 
