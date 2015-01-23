@@ -145,7 +145,7 @@ GoogleContacts.prototype.getSingleContact = function (cid, callback) {
   var resolver;
 
   if (!_.isString(cid)) {
-    throw new Error('Invalid cid property; expected string, received ' + type(cid));
+    throw new Error('Invalid cid argument; expected string, received ' + type(cid));
   }
 
   resolver = function (resolve, reject) {
@@ -156,6 +156,49 @@ GoogleContacts.prototype.getSingleContact = function (cid, callback) {
       uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', cid),
       qs: {v: '3.0', 'alt': 'json'},
       headers: {'Authorization': 'Bearer ' + _this._token}
+    };
+
+    request(params, function (err, response, data) {
+      var statusCode;
+
+      if (err) return reject(err);
+
+      statusCode = response.statusCode;
+      if (statusCode >= 400 || data.error_description) {
+        return reject(new Error(data.error_description));
+      }
+
+      resolve(data);
+    });
+  };
+
+  return new Promise(resolver).nodeify(callback);
+};
+
+
+GoogleContacts.prototype.deleteContact = function (cid, etag, callback) {
+  var _this = this;
+  var resolver;
+
+  if (!_.isString(cid)) {
+    throw new Error('Invalid cid argument; expected string, received ' + type(cid));
+  }
+
+  if (!_.isString(etag)) {
+    throw new Error('Invalid etag argument; expected string, received ' + type(etag));
+  }
+
+  resolver = function (resolve, reject) {
+    var params;
+
+    params = {
+      method: 'DELETE',
+      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', cid),
+      qs: {v: '3.0'},
+      headers: {
+        'Authorization': 'Bearer ' + _this._token,
+        'If-match': etag
+      }
     };
 
     request(params, function (err, response, data) {

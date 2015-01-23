@@ -81,4 +81,33 @@ describe('GoogleContacts API', function () {
 
   });
 
+  describe('#getSingleContact', function () {
+
+    it('throws error when cid is invalid', function () {
+      assert.throws(function () { gContacts.getSingleContact(123); }, /invalid cid argument/i);
+      assert.throws(function () { gContacts.getSingleContact(true); }, /invalid cid argument/i);
+      assert.throws(function () { gContacts.getSingleContact(null); }, /invalid cid argument/i);
+      assert.throws(function () { gContacts.getSingleContact(new Date()); }, /invalid cid argument/i);
+    });
+
+  });
+
+  describe('#deleteContact', function () {
+
+    it('throws error when cid is invalid', function () {
+      assert.throws(function () { gContacts.deleteContact(123, 'etag'); }, /invalid cid argument/i);
+      assert.throws(function () { gContacts.deleteContact(true, 'etag'); }, /invalid cid argument/i);
+      assert.throws(function () { gContacts.deleteContact(null, 'etag'); }, /invalid cid argument/i);
+      assert.throws(function () { gContacts.deleteContact(new Date(), 'etag'); }, /invalid cid argument/i);
+    });
+
+    it('throws error when etag is invalid', function () {
+      assert.throws(function () { gContacts.deleteContact('contactId', 123); }, /invalid etag argument/i);
+      assert.throws(function () { gContacts.deleteContact('contactId', true); }, /invalid etag argument/i);
+      assert.throws(function () { gContacts.deleteContact('contactId', null); }, /invalid etag argument/i);
+      assert.throws(function () { gContacts.deleteContact('contactId', new Date()); }, /invalid etag argument/i);
+    });
+
+  });
+
 });
