@@ -128,4 +128,40 @@ GoogleContactsApiClient.prototype.getContacts = function (params, callback) {
 };
 
 
+GoogleContactsApiClient.prototype.getSingleContact = function (contactId, callback) {
+  var options;
+  var resolver;
+
+  // set /GET request options
+  options = {
+    method: 'GET',
+    // Use of query parameter v=3.0 to ask for v3 google api.
+    uri: 'https://www.google.com/m8/feeds/contacts/default/full/'+ contactId + '?v=3.0&alt=json',
+    headers: {
+      'Authorization': 'Bearer ' + this._token
+    }
+  };
+
+  resolver = function (resolve, reject) {
+    request(options, function (err, response, data) {
+      var statusCode = response.statusCode;
+
+      if (err) return reject(err);
+
+      if (statusCode >= 400 || data.error_description) {
+        return reject(new Error(data.error_description));
+      }
+
+      resolve(data);
+    });
+  };
+
+  return new Promise(resolver)
+    .then(function (response) {
+      console.log('Response is: ', response);
+    })
+    .nodeify(callback);
+};
+
+
 module.exports = GoogleContactsApiClient;
