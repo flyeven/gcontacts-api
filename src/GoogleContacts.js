@@ -88,8 +88,6 @@ GoogleContacts.prototype.authorize = function (token, callback) {
 
 GoogleContacts.prototype.getContacts = function (options, callback) {
   var _this = this;
-  var limit;
-  var offset;
   var resolver;
 
   // handle optional "options" param
@@ -103,7 +101,7 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
   }
 
   // set default options
-  options = _.default(options, {
+  options = _.defaults(options, {
     limit: 100,
     offset: 0
   });
@@ -114,7 +112,7 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
     params = {
       method: 'GET',
       uri: 'https://www.google.com/m8/feeds/contacts/default/full',
-      qs: {v: '3.0'},
+      qs: {v: '3.0', 'alt': 'json'},
       headers: {'Authorization': 'Bearer ' + _this._token}
     };
 
@@ -142,14 +140,12 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
 };
 
 
-GoogleContacts.prototype.getSingleContact = function (contactId, callback) {
+GoogleContacts.prototype.getSingleContact = function (cid, callback) {
   var _this = this;
-  var limit;
-  var offset;
   var resolver;
 
-  if (!_.isString(contactId)) {
-    throw new Error('Invalid contactId property; expected string, received ' + type(contactId));
+  if (!_.isString(cid)) {
+    throw new Error('Invalid cid property; expected string, received ' + type(cid));
   }
 
   resolver = function (resolve, reject) {
@@ -157,8 +153,8 @@ GoogleContacts.prototype.getSingleContact = function (contactId, callback) {
 
     params = {
       method: 'GET',
-      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', contactId),
-      qs: {v: '3.0'},
+      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', cid),
+      qs: {v: '3.0', 'alt': 'json'},
       headers: {'Authorization': 'Bearer ' + _this._token}
     };
 
