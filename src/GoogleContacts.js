@@ -5,6 +5,9 @@ var isUrl = require('is-url');
 var type = require('type-of');
 var _ = require('lodash');
 
+var generateContactAsXML = require('./lib/build');
+
+
 function GoogleContacts(props) {
   if (!_.isPlainObject(props)) {
     throw new Error('Invalid props argument; expected object, received ' + type(props));
@@ -199,6 +202,58 @@ GoogleContacts.prototype.deleteContact = function (cid, etag, callback) {
         'Authorization': 'Bearer ' + _this._token,
         'If-match': etag
       }
+    };
+
+    request(params, function (err, response, data) {
+      var statusCode;
+
+      if (err) return reject(err);
+
+      statusCode = response.statusCode;
+      if (statusCode >= 400 || data.error_description) {
+        return reject(new Error(data.error_description));
+      }
+
+      resolve(data);
+    });
+  };
+
+  return new Promise(resolver).nodeify(callback);
+};
+
+
+GoogleContacts.prototype.createContact = function (obj, callback) {
+  var _this = this;
+  var resolver;
+
+  if (!_.isPlainObject(obj)) {
+    throw new Error('Invalid obj argument; expected object, received ' + type(obj));
+  }
+
+  if (!_.isPlainObject(obj.name)) {
+    throw new Error('Invalid name property; expected object, received ' + type(obj.name));
+  }
+
+  if (!_.isPlainObject(obj.email)) {
+    throw new Error('Invalid email property; expected object, received ' + type(obj.email));
+  }
+
+  if (!_.isPlainObject(obj.phone)) {
+    throw new Error('Invalid phone property; expected object, received ' + type(obj.phone));
+  }
+
+  resolver = function (resolve, reject) {
+    var params;
+
+    params = {
+      method: 'POST',
+      uri: 'https://www.google.com/m8/feeds/contacts/default/full/',
+      qs: {v: '3.0'},
+      headers: {
+        'Authorization': 'Bearer ' + _this._token,
+        'Content-Type': 'application/atom+xml; charset=utf-8; type=feed'
+      },
+      body: generateContactAsXML(obj)
     };
 
     request(params, function (err, response, data) {

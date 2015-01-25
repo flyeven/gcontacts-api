@@ -110,4 +110,42 @@ describe('GoogleContacts API', function () {
 
   });
 
+  describe('#createContact', function () {
+
+    it('throws error when obj is invalid', function () {
+      assert.throws(function () { gContacts.createContact(); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.createContact('string'); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.createContact(123); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.createContact(true); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.createContact(null); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.createContact(new Date()); }, /invalid obj argument/i);
+    });
+
+    it('throws error when name property is invalid', function () {
+      assert.throws(function () { gContacts.createContact({}); }, /invalid name property/i);
+      assert.throws(function () { gContacts.createContact({name: 123}); }, /invalid name property/i);
+      assert.throws(function () { gContacts.createContact({name: true}); }, /invalid name property/i);
+      assert.throws(function () { gContacts.createContact({name: null}); }, /invalid name property/i);
+      assert.throws(function () { gContacts.createContact({name: new Date()}); }, /invalid name property/i);
+    });
+
+    it('throws error when email property is invalid', function () {
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}}); }, /invalid email property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: 123}); }, /invalid email property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: true}); }, /invalid email property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: null}); }, /invalid email property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: new Date()}); }, /invalid email property/i);
+    });
+
+    it('throws error when phone property is invalid', function () {
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: {value: 'valid'}}); }, /invalid phone property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: {value: 'valid'}, phone: 'phone-string'}); }, /invalid phone property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: {value: 'valid'}, phone: 123}); }, /invalid phone property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: {value: 'valid'}, phone: true}); }, /invalid phone property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: {value: 'valid'}, phone: null}); }, /invalid phone property/i);
+      assert.throws(function () { gContacts.createContact({name: {value: 'valid'}, email: {value: 'valid'}, phone: new Date()}); }, /invalid phone property/i);
+    });
+
+  });
+
 });
