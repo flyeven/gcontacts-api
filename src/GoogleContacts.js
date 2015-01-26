@@ -5,6 +5,7 @@ var isUrl = require('is-url');
 var type = require('type-of');
 var _ = require('lodash');
 var Document = require('./Document');
+var formatResponse = require('./formatResponse');
 
 function GoogleContacts(props) {
   if (!_.isPlainObject(props)) {
@@ -136,6 +137,10 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
         return reject(new Error(data.error_description));
       }
 
+      data = data.map(function (obj) {
+        return formatResponse(obj);
+      });
+
       resolve(data);
     });
   };
@@ -175,7 +180,7 @@ GoogleContacts.prototype.getSingleContact = function (id, callback) {
         return reject(new Error(data.error_description));
       }
 
-      resolve(data);
+      resolve(formatResponse(data));
     });
   };
 
