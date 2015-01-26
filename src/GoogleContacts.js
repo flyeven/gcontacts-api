@@ -4,9 +4,7 @@ var request = require('request');
 var isUrl = require('is-url');
 var type = require('type-of');
 var _ = require('lodash');
-
-var generateContactAsXML = require('./lib/build');
-
+var Document = require('./Document');
 
 function GoogleContacts(props) {
   if (!_.isPlainObject(props)) {
@@ -115,7 +113,10 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
     params = {
       method: 'GET',
       uri: 'https://www.google.com/m8/feeds/contacts/default/full',
-      qs: {v: '3.0', 'alt': 'json'},
+      qs: {
+        v: '3.0',
+        alt: 'json'
+      },
       headers: {'Authorization': 'Bearer ' + _this._token}
     };
 
@@ -143,12 +144,12 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
 };
 
 
-GoogleContacts.prototype.getSingleContact = function (cid, callback) {
+GoogleContacts.prototype.getSingleContact = function (id, callback) {
   var _this = this;
   var resolver;
 
-  if (!_.isString(cid)) {
-    throw new Error('Invalid cid argument; expected string, received ' + type(cid));
+  if (!_.isString(id)) {
+    throw new Error('Invalid id argument; expected string, received ' + type(id));
   }
 
   resolver = function (resolve, reject) {
@@ -156,8 +157,11 @@ GoogleContacts.prototype.getSingleContact = function (cid, callback) {
 
     params = {
       method: 'GET',
-      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', cid),
-      qs: {v: '3.0', 'alt': 'json'},
+      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', id),
+      qs: {
+        v: '3.0',
+        alt: 'json'
+      },
       headers: {'Authorization': 'Bearer ' + _this._token}
     };
 
@@ -179,12 +183,20 @@ GoogleContacts.prototype.getSingleContact = function (cid, callback) {
 };
 
 
-GoogleContacts.prototype.deleteContact = function (cid, etag, callback) {
+GoogleContacts.prototype.deleteContact = function (id, etag, callback) {
   var _this = this;
   var resolver;
 
-  if (!_.isString(cid)) {
-    throw new Error('Invalid cid argument; expected string, received ' + type(cid));
+  if (!_.isString(id)) {
+    throw new Error('Invalid id argument; expected string, received ' + type(id));
+  }
+
+  // handle optional etag argument
+  if (_.isFunction(etag)) {
+    callback = etag;
+    etag = '*';
+  } else if (_.isUndefined(etag)) {
+    etag = '*';
   }
 
   if (!_.isString(etag)) {
@@ -196,7 +208,7 @@ GoogleContacts.prototype.deleteContact = function (cid, etag, callback) {
 
     params = {
       method: 'DELETE',
-      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', cid),
+      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', id),
       qs: {v: '3.0'},
       headers: {
         'Authorization': 'Bearer ' + _this._token,
@@ -214,7 +226,7 @@ GoogleContacts.prototype.deleteContact = function (cid, etag, callback) {
         return reject(new Error(data.error_description));
       }
 
-      resolve(data);
+      resolve();
     });
   };
 
@@ -230,18 +242,6 @@ GoogleContacts.prototype.createContact = function (obj, callback) {
     throw new Error('Invalid obj argument; expected object, received ' + type(obj));
   }
 
-  if (!_.isPlainObject(obj.name)) {
-    throw new Error('Invalid name property; expected object, received ' + type(obj.name));
-  }
-
-  if (!_.isPlainObject(obj.email)) {
-    throw new Error('Invalid email property; expected object, received ' + type(obj.email));
-  }
-
-  if (!_.isPlainObject(obj.phone)) {
-    throw new Error('Invalid phone property; expected object, received ' + type(obj.phone));
-  }
-
   resolver = function (resolve, reject) {
     var params;
 
@@ -253,7 +253,7 @@ GoogleContacts.prototype.createContact = function (obj, callback) {
         'Authorization': 'Bearer ' + _this._token,
         'Content-Type': 'application/atom+xml; charset=utf-8; type=feed'
       },
-      body: generateContactAsXML(obj)
+      body: Document.fromJSON(obj)
     };
 
     request(params, function (err, response, data) {
