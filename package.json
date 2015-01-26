@@ -36,7 +36,8 @@
     "lodash": "^2.4.1",
     "request": "^2.51.0",
     "type-of": "^2.0.1",
-    "xml": "^1.0.0"
+    "xml": "^1.0.0",
+    "xmlbuilder": "^2.4.6"
   },
   "devDependencies": {
     "chai": "^1.10.0",
