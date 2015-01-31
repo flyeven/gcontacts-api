@@ -118,6 +118,7 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
         v: '3.0',
         alt: 'json'
       },
+      json: true,
       headers: {'Authorization': 'Bearer ' + _this._token}
     };
 
@@ -137,7 +138,7 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
         return reject(new Error(data.error_description));
       }
 
-      data = data.map(function (obj) {
+      data = _.map(data.feed.entry, function (obj) {
         return formatResponse(obj);
       });
 
@@ -167,6 +168,7 @@ GoogleContacts.prototype.getSingleContact = function (id, callback) {
         v: '3.0',
         alt: 'json'
       },
+      json: true,
       headers: {'Authorization': 'Bearer ' + _this._token}
     };
 
@@ -180,7 +182,7 @@ GoogleContacts.prototype.getSingleContact = function (id, callback) {
         return reject(new Error(data.error_description));
       }
 
-      resolve(formatResponse(data));
+      resolve(formatResponse(data.entry));
     });
   };
 
