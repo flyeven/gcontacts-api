@@ -41,9 +41,13 @@ Document.prototype.name = function (obj) {
 
   ele = this._root.ele('gd:name');
 
-  if (obj.givenName) ele.ele('gd:givenName', obj.givenName);
-  if (obj.familyName) ele.ele('gd:familyName', obj.familyName);
-  if (obj.fullName) ele.ele('gd:fullName', obj.fullName);
+  obj = _.defaults(obj, {
+    fullName: _.filter(obj, _.isString).join(' ')
+  });
+
+  _.forOwn(obj, function(value, key) {
+    ele.ele('gd:' + key, value);
+  });
 
   return ele;
 };
@@ -141,4 +145,4 @@ Document.fromJSON = function (obj) {
 };
 
 
-console.log(Document.fromJSON({email: {address: 123}, name: {fullName: 'Tom Bom'}, notes: {text: 'wtgsdg'}, im: {address: 'foo@mail.com'}, address: {city: 'Athens', street: 'LA Ave', country: 'Greece'}}));
+console.log(Document.fromJSON({email: {address: 123}, name: {givenName: 'Tom'}, notes: {text: 'wtgsdg'}, im: {address: 'foo@mail.com'}, address: {city: 'Athens', street: 'LA Ave', country: 'Greece'}}));
