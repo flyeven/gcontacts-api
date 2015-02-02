@@ -123,4 +123,28 @@ describe('GoogleContacts API', function () {
 
   });
 
+  describe('#updateContact', function () {
+
+    it('throws error when id is invalid', function () {
+      assert.throws(function () { gContacts.updateContact(123, {}); }, /invalid id argument/i);
+      assert.throws(function () { gContacts.updateContact(true, {}); }, /invalid id argument/i);
+      assert.throws(function () { gContacts.updateContact(null, {}); }, /invalid id argument/i);
+      assert.throws(function () { gContacts.updateContact(new Date(), {}); }, /invalid id argument/i);
+    });
+
+    it('throws error when obj is invalid', function () {
+      assert.throws(function () { gContacts.updateContact('contactId'); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', 123); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', true); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', null); }, /invalid obj argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', new Date()); }, /invalid obj argument/i);
+    });
+
+    it('throws error when etag is invalid', function () {
+      assert.throws(function () { gContacts.updateContact('contactId', {}, 123); }, /invalid etag argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', {}, true); }, /invalid etag argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', {}, null); }, /invalid etag argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', {}, new Date()); }, /invalid etag argument/i);
+    });
+  });
 });

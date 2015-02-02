@@ -7,6 +7,7 @@ var _ = require('lodash');
 var Document = require('./Document');
 var formatResponse = require('./formatResponse');
 
+
 function GoogleContacts(props) {
   if (!_.isPlainObject(props)) {
     throw new Error('Invalid props argument; expected object, received ' + type(props));
@@ -255,7 +256,10 @@ GoogleContacts.prototype.createContact = function (obj, callback) {
     params = {
       method: 'POST',
       uri: 'https://www.google.com/m8/feeds/contacts/default/full/',
-      qs: {v: '3.0'},
+      qs: {
+        v: '3.0',
+        alt: 'json'
+      },
       headers: {
         'Authorization': 'Bearer ' + _this._token,
         'Content-Type': 'application/atom+xml; charset=utf-8; type=feed'
@@ -273,7 +277,67 @@ GoogleContacts.prototype.createContact = function (obj, callback) {
         return reject(new Error(data.error_description));
       }
 
-      resolve(data);
+      resolve(formatResponse(JSON.parse(data).entry));
+    });
+  };
+
+  return new Promise(resolver).nodeify(callback);
+};
+
+
+GoogleContacts.prototype.updateContact = function (id, obj, etag, callback) {
+  var _this = this;
+  var resolver;
+
+  if (!_.isString(id)) {
+    throw new Error('Invalid id argument; expected string, received ' + type(id));
+  }
+
+  if (!_.isPlainObject(obj)) {
+    throw new Error('Invalid obj argument; expected object, received ' + type(obj));
+  }
+
+  // handle optional etag argument
+  if (_.isFunction(etag)) {
+    callback = etag;
+    etag = '*';
+  } else if (_.isUndefined(etag)) {
+    etag = '*';
+  }
+
+  if (!_.isString(etag)) {
+    throw new Error('Invalid etag argument; expected string, received ' + type(etag));
+  }
+
+  resolver = function (resolve, reject) {
+    var params;
+
+    params = {
+      method: 'PUT',
+      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', id),
+      qs: {
+        v: '3.0',
+        alt: 'json'
+      },
+      headers: {
+        'Authorization': 'Bearer ' + _this._token,
+        'Content-Type': 'application/atom+xml; charset=utf-8; type=feed',
+        'If-match': etag
+      },
+      body: Document.fromJSON(obj)
+    };
+
+    request(params, function (err, response, data) {
+      var statusCode;
+
+      if (err) return reject(err);
+
+      statusCode = response.statusCode;
+      if (statusCode >= 400 || data.error_description) {
+        return reject(new Error(data.error_description));
+      }
+
+      resolve(formatResponse(JSON.parse(data).entry));
     });
   };
 
