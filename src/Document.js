@@ -7,7 +7,7 @@ function Document () {
   this._root = xmlbuilder.create('atom:entry');
 
   this._root.att('xmlns:atom', 'http://www.w3.org/2005/Atom');
-  this._root.att('xmlns:gd', 'http://schemas/google.com/g/2005');
+  this._root.att('xmlns:gd', 'http://schemas.google.com/g/2005');
 
   this._root.ele('atom:category', {
     scheme: 'http://schemas.google.com/g/2005#kind',
@@ -63,7 +63,7 @@ Document.prototype.phone = function (obj) {
 
   ele = this._root.ele('gd:phoneNumber', {
     rel: 'http://schemas.google.com/g/2005#' + obj.rel
-  }, obj.phonenNumber);
+  }, obj.phoneNumber);
 
   if (obj.primary) ele.att('primary', 'true');
 
@@ -110,7 +110,6 @@ Document.prototype.address = function (obj) {
   _(obj)
     .omit(['primary', 'rel'])
     .forOwn(function (value, key) {
-      console.log(key);
       ele.ele('gd:'+ key, value);
     });
 
@@ -121,7 +120,7 @@ Document.prototype.address = function (obj) {
 Document.prototype.notes = function (obj) {
   var ele;
 
-  ele = this._root.ele('gd:content', {
+  ele = this._root.ele('atom:content', {
     type: 'text'}, obj.text);
 
   return ele;
@@ -136,7 +135,6 @@ Document.prototype.toString = function () {
 Document.fromJSON = function (obj) {
   var doc = new Document();
 
-  console.log(doc);
   _.forOwn(obj, function (value, key) {
     if (doc[key]) doc[key](value);
   });
@@ -145,4 +143,4 @@ Document.fromJSON = function (obj) {
 };
 
 
-console.log(Document.fromJSON({email: {address: 123}, name: {givenName: 'Tom'}, notes: {text: 'wtgsdg'}, im: {address: 'foo@mail.com'}, address: {city: 'Athens', street: 'LA Ave', country: 'Greece'}}));
+module.exports = Document;

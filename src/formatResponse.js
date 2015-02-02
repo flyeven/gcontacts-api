@@ -28,6 +28,7 @@ function formatAddress (array) {
 module.exports = function (obj) {
   return {
     id: path.basename(obj.id.$t),
+    etag: obj.gd$etag,
     updated: formatDate(obj.updated.$t),
     category: obj.category,
     title: obj.title.$t,
