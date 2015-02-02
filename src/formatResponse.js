@@ -5,7 +5,7 @@ var _ = require('lodash');
 
 function formatDate (date) {
   return moment(date, 'YYYY-MM-DDTHH:mm:ss.SSSZ').toDate();
-};
+}
 
 
 function formatAddress (array) {
@@ -21,7 +21,7 @@ function formatAddress (array) {
     };
   });
   return address;
-};
+}
 
 
 // Depends how many fields we want to expose. These are the "defaults" on gmail UI.
