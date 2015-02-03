@@ -9,9 +9,9 @@ mocha = new Mocha({
 });
 
 // load the test files
-mocha.addFile(path.resolve(__dirname, './GoogleContacts'));
+mocha.addFile(path.resolve(__dirname, './google-contacts'));
+mocha.addFile(path.resolve(__dirname, './format-response'));
 mocha.addFile(path.resolve(__dirname, './filters'));
-mocha.addFile(path.resolve(__dirname, './formatResponse'));
 
 // run the tests
 mocha.run(function (failures) {
