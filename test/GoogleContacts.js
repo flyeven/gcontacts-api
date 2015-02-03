@@ -146,5 +146,7 @@ describe('GoogleContacts API', function () {
       assert.throws(function () { gContacts.updateContact('contactId', {}, null); }, /invalid etag argument/i);
       assert.throws(function () { gContacts.updateContact('contactId', {}, new Date()); }, /invalid etag argument/i);
     });
+
   });
+
 });

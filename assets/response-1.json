@@ -1,0 +1,93 @@
+{
+  "id": {
+    "$t": "http://www.google.com/m8/feeds/contacts/default/base/415e59720ed3cf57"
+  },
+  "gd$etag": "\"QXY4fTVSLit7I2A9XRRRGUwMRAI.\"",
+  "updated": {
+    "$t": "2015-02-02T22:32:40.835Z"
+  },
+  "app$edited": {
+    "xmlns$app": "http://www.w3.org/2007/app",
+    "$t": "2015-02-02T22:32:40.835Z"
+  },
+  "category": [
+    {
+      "scheme": "http://schemas.google.com/g/2005#kind",
+      "term": "http://schemas.google.com/contact/2008#contact"
+    }
+  ],
+  "title": {
+    "$t": "Lebron james"
+  },
+  "content": {
+    "$t": "shirt number 23"
+  },
+  "link": [
+    {
+      "rel": "http://schemas.google.com/contacts/2008/rel#photo",
+      "type": "image/*",
+      "href": "https://www.google.com/m8/feeds/photos/media/mail.doctor46%40gmail.com/415e59720ed3cf57?v=3.0"
+    },
+    {
+      "rel": "self",
+      "type": "application/atom+xml",
+      "href": "https://www.google.com/m8/feeds/contacts/mail.doctor46%40gmail.com/full/415e59720ed3cf57?v=3.0"
+    },
+    {
+      "rel": "edit",
+      "type": "application/atom+xml",
+      "href": "https://www.google.com/m8/feeds/contacts/mail.doctor46%40gmail.com/full/415e59720ed3cf57?v=3.0"
+    }
+  ],
+  "gd$name": {
+    "gd$fullName": {
+      "$t": "Lebron james"
+    },
+    "gd$givenName": {
+      "$t": "Lebron"
+    },
+    "gd$familyName": {
+      "$t": "james"
+    }
+  },
+  "gd$email": [
+    {
+      "address": "lebron@nba.com",
+      "rel": "http://schemas.google.com/g/2005#home"
+    }
+  ],
+  "gd$im": [
+    {
+      "address": "king@cavs.com",
+      "protocol": "http://schemas.google.com/g/2005#GOOGLE_TALK",
+      "rel": "http://schemas.google.com/g/2005#home"
+    }
+  ],
+  "gd$phoneNumber": [
+    {
+      "rel": "http://schemas.google.com/g/2005#home",
+      "$t": "2306232"
+    }
+  ],
+  "gd$structuredPostalAddress": [
+    {
+      "rel": "http://schemas.google.com/g/2005#home",
+      "gd$formattedAddress": {
+        "$t": "Ohaio State\nCleveland\nUSA"
+      },
+      "gd$street": {
+        "$t": "Ohaio State"
+      },
+      "gd$city": {
+        "$t": "Cleveland"
+      },
+      "gd$country": {
+        "$t": "USA"
+      }
+    }
+  ],
+  "xmlns": "http://www.w3.org/2005/Atom",
+  "xmlns$batch": "http://schemas.google.com/gdata/batch",
+  "xmlns$gContact": "http://schemas.google.com/contact/2008",
+  "xmlns$gd": "http://schemas.google.com/g/2005"
+}
