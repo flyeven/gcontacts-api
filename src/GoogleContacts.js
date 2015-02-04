@@ -37,13 +37,16 @@ GoogleContacts.prototype.getAuthUrl = function () {
     pathname: '/o/oauth2/auth',
     query: {
       response_type: 'code',
+//    state: '21g5754y54744yehfddsgre6dhgfdhrd', // csrf token
       client_id: this._clientId,
       redirect_uri: this._redirectUrl,
       scope: 'https://www.google.com/m8/feeds',
-      approval_prompt: 'force'
+      access_type: 'offline',
+      approval_prompt: 'auto'
     }
   });
 };
+
 
 GoogleContacts.prototype.authorize = function (token, callback) {
   var _this = this;
@@ -81,6 +84,50 @@ GoogleContacts.prototype.authorize = function (token, callback) {
 
       // update client token
       _this._token = data.access_token;
+      _this._refreshToken = data.refresh_token;
+      _this._tokenType = data.token_type;
+
+      console.log('going to resolve authorize method');
+      resolve(data);
+    });
+  };
+
+  return new Promise(resolver).nodeify(callback);
+};
+
+
+GoogleContacts.prototype.refreshToken = function(callback) {
+  var _this = this;
+  var resolver;
+
+  resolver = function (resolve, reject) {
+    var params;
+
+    params = {
+      method: 'POST',
+      uri: 'https://www.googleapis.com/oauth2/v3/token',
+      form: {
+        refresh_token: _this._refreshToken,
+        client_id: _this._clientId,
+        client_secret: _this._clientSecret,
+        grant_type: 'refresh_token'
+      },
+      json: true
+    };
+
+    request(params, function (err, response, data) {
+      var statusCode = response.statusCode;
+
+      if (err) return reject(err);
+
+      statusCode = response.statusCode;
+      if (statusCode >= 400 || data.error_description) {
+        return reject(new Error(data.error_description));
+      }
+
+      // update client token
+      _this._token = data.access_token;
+      _this._tokenType = data.token_type;
 
       resolve(data);
     });
@@ -88,6 +135,7 @@ GoogleContacts.prototype.authorize = function (token, callback) {
 
   return new Promise(resolver).nodeify(callback);
 };
+
 
 GoogleContacts.prototype.getContacts = function (options, callback) {
   var _this = this;
