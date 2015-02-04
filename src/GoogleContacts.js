@@ -21,39 +21,45 @@ function GoogleContacts(props) {
     throw new Error('Invalid clientSecret property; expected string, received ' + type(props.clientSecret));
   }
 
-  if (!isUrl(props.redirectUrl)) {
-    throw new Error('Invalid redirectUrl property; expected string, received ' + type(props.redirectUrl));
-  }
-
   this._clientId = props.clientId;
   this._clientSecret = props.clientSecret;
-  this._redirectUrl = props.redirectUrl;
 }
 
-GoogleContacts.prototype.getAuthUrl = function () {
+GoogleContacts.prototype.getAuthUrl = function (options) {
+  if (!isUrl(options.redirectUrl)) {
+    throw new Error('Invalid redirectUrl options; expected string, received ' + type(options.redirectUrl));
+  }
+
+  options = _.defaults(options, {
+    accessType: 'offline',
+    approvalPrompt: 'auto'
+  });
+
   return url.format({
     protocol: 'https',
     host: 'accounts.google.com',
     pathname: '/o/oauth2/auth',
     query: {
       response_type: 'code',
-//    state: '21g5754y54744yehfddsgre6dhgfdhrd', // csrf token
       client_id: this._clientId,
-      redirect_uri: this._redirectUrl,
+      redirect_uri: options.redirectUrl,
       scope: 'https://www.google.com/m8/feeds',
-      access_type: 'offline',
-      approval_prompt: 'auto'
+      access_type: options.accessType,
+      approval_prompt: options.approvalPrompt
     }
   });
 };
 
-
-GoogleContacts.prototype.authorize = function (token, callback) {
+GoogleContacts.prototype.authorize = function (code, redirectUrl, callback) {
   var _this = this;
   var resolver;
 
-  if (!_.isString(token)) {
-    throw new Error('Invalid token argument; expected string, received ' + type(token));
+  if (!_.isString(code)) {
+    throw new Error('Invalid code argument; expected string, received ' + type(code));
+  }
+
+  if (!isUrl(redirectUrl)) {
+    throw new Error('Invalid redirectUrl argument; expected string, received ' + type(redirectUrl));
   }
 
   resolver = function (resolve, reject) {
@@ -64,10 +70,10 @@ GoogleContacts.prototype.authorize = function (token, callback) {
       uri: 'https://accounts.google.com/o/oauth2/token',
       form: {
         grant_type: 'authorization_code',
-        code: token,
+        code: code,
         client_id: _this._clientId,
         client_secret: _this._clientSecret,
-        redirect_uri: _this._redirectUrl
+        redirect_uri: redirectUrl
       },
       json: true
     };
@@ -84,10 +90,8 @@ GoogleContacts.prototype.authorize = function (token, callback) {
 
       // update client token
       _this._token = data.access_token;
-      _this._refreshToken = data.refresh_token;
       _this._tokenType = data.token_type;
 
-      console.log('going to resolve authorize method');
       resolve(data);
     });
   };
@@ -95,8 +99,7 @@ GoogleContacts.prototype.authorize = function (token, callback) {
   return new Promise(resolver).nodeify(callback);
 };
 
-
-GoogleContacts.prototype.refreshToken = function(callback) {
+GoogleContacts.prototype.authorizeOffline = function(refreshToken, callback) {
   var _this = this;
   var resolver;
 
@@ -107,7 +110,7 @@ GoogleContacts.prototype.refreshToken = function(callback) {
       method: 'POST',
       uri: 'https://www.googleapis.com/oauth2/v3/token',
       form: {
-        refresh_token: _this._refreshToken,
+        refresh_token: refreshToken,
         client_id: _this._clientId,
         client_secret: _this._clientSecret,
         grant_type: 'refresh_token'
@@ -168,7 +171,7 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
         alt: 'json'
       },
       json: true,
-      headers: {'Authorization': 'Bearer ' + _this._token}
+      headers: {'Authorization': _this._tokenType + ' ' + _this._token}
     };
 
     // append options to querystring
@@ -218,7 +221,7 @@ GoogleContacts.prototype.getSingleContact = function (id, callback) {
         alt: 'json'
       },
       json: true,
-      headers: {'Authorization': 'Bearer ' + _this._token}
+      headers: {'Authorization': _this._tokenType + ' ' + _this._token}
     };
 
     request(params, function (err, response, data) {
@@ -267,7 +270,7 @@ GoogleContacts.prototype.deleteContact = function (id, etag, callback) {
       uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', id),
       qs: {v: '3.0'},
       headers: {
-        'Authorization': 'Bearer ' + _this._token,
+        'Authorization': _this._tokenType + ' ' + _this._token,
         'If-match': etag
       }
     };
@@ -309,7 +312,7 @@ GoogleContacts.prototype.createContact = function (obj, callback) {
         alt: 'json'
       },
       headers: {
-        'Authorization': 'Bearer ' + _this._token,
+        'Authorization': _this._tokenType + ' ' + _this._token,
         'Content-Type': 'application/atom+xml; charset=utf-8; type=feed'
       },
       body: Document.fromJSON(obj)
@@ -368,7 +371,7 @@ GoogleContacts.prototype.updateContact = function (id, obj, etag, callback) {
         alt: 'json'
       },
       headers: {
-        'Authorization': 'Bearer ' + _this._token,
+        'Authorization': _this._tokenType + ' ' + _this._token,
         'Content-Type': 'application/atom+xml; charset=utf-8; type=feed',
         'If-match': etag
       },
