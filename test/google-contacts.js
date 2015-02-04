@@ -1,6 +1,7 @@
 // load environmental variables
 require('dotenv').load();
 
+var _ = require('lodash');
 var assert = require('chai').assert;
 var GoogleContacts = require('../');
 
@@ -8,8 +9,7 @@ describe('GoogleContacts API', function () {
 
   var gContacts = new GoogleContacts({
     clientId: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
-    redirectUrl: process.env.REDIRECT_URL
+    clientSecret: process.env.CLIENT_SECRET
   });
 
   describe('constructor', function () {
@@ -39,21 +39,21 @@ describe('GoogleContacts API', function () {
       assert.throws(function () { new GoogleContacts({clientId: 'valid', clientSecret: new Date()}); }, /invalid clientSecret property/i);
     });
 
-    it('throws error when redirectUrl property is invalid', function () {
-      assert.throws(function () { new GoogleContacts({clientId: 'valid', clientSecret: 'valid'}); }, /invalid redirectUrl property/i);
-      assert.throws(function () { new GoogleContacts({clientId: 'valid', clientSecret: 'valid', redirectUrl: 'string-not-url'}); }, /invalid redirectUrl property/i);
-      assert.throws(function () { new GoogleContacts({clientId: 'valid', clientSecret: 'valid', redirectUrl: 123}); }, /invalid redirectUrl property/i);
-      assert.throws(function () { new GoogleContacts({clientId: 'valid', clientSecret: 'valid', redirectUrl: true}); }, /invalid redirectUrl property/i);
-      assert.throws(function () { new GoogleContacts({clientId: 'valid', clientSecret: 'valid', redirectUrl: null}); }, /invalid redirectUrl property/i);
-      assert.throws(function () { new GoogleContacts({clientId: 'valid', clientSecret: 'valid', redirectUrl: new Date()}); }, /invalid redirectUrl property/i);
-    });
-
   });
 
   describe('#getAuthUrl', function () {
 
-    it('returns string', function () {
-      assert.isString(gContacts.getAuthUrl());
+    it('throws error when redirectUrl option is invalid', function () {
+      assert.throws(function () { gContacts.getAuthUrl({}); }, /invalid redirectUrl option/i);
+      assert.throws(function () { gContacts.getAuthUrl({redirectUrl: 'string-not-url'}); }, /invalid redirectUrl option/i);
+      assert.throws(function () { gContacts.getAuthUrl({redirectUrl: 123}); }, /invalid redirectUrl option/i);
+      assert.throws(function () { gContacts.getAuthUrl({redirectUrl: true}); }, /invalid redirectUrl option/i);
+      assert.throws(function () { gContacts.getAuthUrl({redirectUrl: null}); }, /invalid redirectUrl option/i);
+      assert.throws(function () { gContacts.getAuthUrl({redirectUrl: new Date()}); }, /invalid redirectUrl option/i);
+    });
+
+    it('returns string on valid redirectUrl', function () {
+      assert.isString(gContacts.getAuthUrl({redirectUrl: 'http://www.google.com'}));
     });
 
   });
@@ -61,11 +61,20 @@ describe('GoogleContacts API', function () {
   describe('#authorize', function () {
 
     it('throws error when token is invalid', function () {
-      assert.throws(function () { gContacts.authorize(); }, /invalid token argument/i);
-      assert.throws(function () { gContacts.authorize(123); }, /invalid token argument/i);
-      assert.throws(function () { gContacts.authorize(true); }, /invalid token argument/i);
-      assert.throws(function () { gContacts.authorize(null); }, /invalid token argument/i);
-      assert.throws(function () { gContacts.authorize(new Date()); }, /invalid token argument/i);
+      assert.throws(function () { gContacts.authorize(); }, /invalid code argument/i);
+      assert.throws(function () { gContacts.authorize(123); }, /invalid code argument/i);
+      assert.throws(function () { gContacts.authorize(true); }, /invalid code argument/i);
+      assert.throws(function () { gContacts.authorize(null); }, /invalid code argument/i);
+      assert.throws(function () { gContacts.authorize(new Date()); }, /invalid code argument/i);
+    });
+
+    it('throws error when redirectUrl is invalid', function () {
+      assert.throws(function () { gContacts.authorize('token'); }, /invalid redirectUrl argument/i);
+      assert.throws(function () { gContacts.authorize('token', 123); }, /invalid redirectUrl argument/i);
+      assert.throws(function () { gContacts.authorize('token', true); }, /invalid redirectUrl argument/i);
+      assert.throws(function () { gContacts.authorize('token', null); }, /invalid redirectUrl argument/i);
+      assert.throws(function () { gContacts.authorize('token', new Date()); }, /invalid redirectUrl argument/i);
+      assert.throws(function () { gContacts.authorize('token', 'string-not-url'); }, /invalid redirectUrl argument/i);
     });
 
   });
@@ -147,6 +156,90 @@ describe('GoogleContacts API', function () {
       assert.throws(function () { gContacts.updateContact('contactId', {}, new Date()); }, /invalid etag argument/i);
     });
 
+  });
+
+  it('successfully completes a CRUD operation', function (done) {
+    // authorize
+    gContacts.authorizeOffline(process.env.REFRESH_TOKEN)
+      .then(function (response) {
+        assert.isObject(response);
+        assert.property(response, 'access_token');
+        assert.property(response, 'token_type');
+        assert.property(response, 'expires_in');
+      })
+      // create new contact
+      .then(function () {
+        return gContacts.createContact({
+          email: {
+            address: 'mj@nba.com'
+          },
+          name: {
+            givenName: 'Michael',
+            familyName: 'jordan'
+          },
+          phone: {
+            phoneNumber: 23456
+          },
+          notes: {
+            text: 'shirt number 23'
+          },
+          im: {
+            address: 'michael@bulls.com'
+          },
+          address: {
+            city: 'Chicago',
+            street: 'Ave',
+            country: 'USA'
+          }
+        });
+      })
+      .then(function (response) {
+        assert.isObject(response);
+        assert.property(response, 'etag');
+        assert.property(response, 'id');
+
+        return [response.id, response.etag];
+      })
+      // read created contact
+      .spread(function (id, etag) {
+        return gContacts.getSingleContact(id, etag);
+      })
+      .then(function (response) {
+        assert.isObject(response);
+        assert.strictEqual(response.email[0].address, 'mj@nba.com');
+
+        return response;
+      })
+      // update contact
+      .then(function (contact) {
+        contact.phone.phoneNumber = '234567';
+        return gContacts.updateContact(contact.id, contact, contact.etag);
+      })
+      .then(function (response) {
+        assert.isObject(response);
+        assert.strictEqual(response.phone[0].number, '234567');
+
+        return response.id;
+      })
+      // read contact (again) to see if update was successfull
+      .then(function (id) {
+        return gContacts.getSingleContact(id);
+      })
+      .then(function (response) {
+        assert.isObject(response);
+        // assert.strictEqual(response.phone[0].number, '234567');
+
+        return [response.id, response.etag];
+      })
+      // delete contact
+      .spread(function (id, etag) {
+        return gContacts.deleteContact(id, etag)
+          .then(function (response) {
+            assert.isUndefined(response);
+          })
+          .return();
+      })
+      .then(done, done);
   });
 
 });

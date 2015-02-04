@@ -26,15 +26,23 @@ function GoogleContacts(props) {
 }
 
 GoogleContacts.prototype.getAuthUrl = function (options) {
+  // validate options argument
+  if (!_.isPlainObject(options)) {
+    throw new Error('Invalid options argument; expected object, received ' + type(options));
+  }
+
+  // validate redirectUrl option
   if (!isUrl(options.redirectUrl)) {
     throw new Error('Invalid redirectUrl options; expected string, received ' + type(options.redirectUrl));
   }
 
+  // set default options
   options = _.defaults(options, {
     accessType: 'offline',
     approvalPrompt: 'auto'
   });
 
+  // create and return URL
   return url.format({
     protocol: 'https',
     host: 'accounts.google.com',
