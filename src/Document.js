@@ -29,6 +29,7 @@ Document.prototype.email = function (obj) {
     rel: 'http://schemas.google.com/g/2005#' + obj.rel
   });
 
+
   if (obj.primary) ele.att('primary', 'true');
   if (obj.displayName) ele.att('displayName', obj.displayName);
 
@@ -136,7 +137,15 @@ Document.fromJSON = function (obj) {
   var doc = new Document();
 
   _.forOwn(obj, function (value, key) {
-    if (doc[key]) doc[key](value);
+    if (doc[key]) {
+      if (_.isArray(value)) {
+        _.map(value, function(val) {
+          doc[key](val);
+        });
+      } else {
+        doc[key](value);
+      }
+    }
   });
 
   return doc.toString();

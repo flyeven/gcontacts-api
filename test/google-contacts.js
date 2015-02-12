@@ -93,10 +93,15 @@ describe('GoogleContacts API', function () {
   describe('#getSingleContact', function () {
 
     it('throws error when id is invalid', function () {
-      assert.throws(function () { gContacts.getSingleContact(123); }, /invalid id argument/i);
-      assert.throws(function () { gContacts.getSingleContact(true); }, /invalid id argument/i);
-      assert.throws(function () { gContacts.getSingleContact(null); }, /invalid id argument/i);
-      assert.throws(function () { gContacts.getSingleContact(new Date()); }, /invalid id argument/i);
+      assert.throws(function () { gContacts.getSingleContact({}); }, /Invalid options properties/i);
+      assert.throws(function () { gContacts.getSingleContact({id: 123}); }, /invalid id property/i);
+      assert.throws(function () { gContacts.getSingleContact({id: true}); }, /invalid id property/i);
+      assert.throws(function () { gContacts.getSingleContact({id: null}); }, /invalid id property/i);
+      assert.throws(function () { gContacts.getSingleContact({id: new Date()}); }, /invalid id property/i);
+      assert.throws(function () { gContacts.getSingleContact({query: 123}); }, /invalid query property/i);
+      assert.throws(function () { gContacts.getSingleContact({query: true}); }, /invalid query property/i);
+      assert.throws(function () { gContacts.getSingleContact({query: null}); }, /invalid query property/i);
+      assert.throws(function () { gContacts.getSingleContact({query: new Date()}); }, /invalid query property/i);
     });
 
   });
@@ -202,7 +207,7 @@ describe('GoogleContacts API', function () {
       })
       // read created contact
       .spread(function (id, etag) {
-        return gContacts.getSingleContact(id, etag);
+        return gContacts.getSingleContact({'id': id});
       })
       .then(function (response) {
         assert.isObject(response);
@@ -212,7 +217,7 @@ describe('GoogleContacts API', function () {
       })
       // update contact
       .then(function (contact) {
-        contact.phone.phoneNumber = '234567';
+        contact.phone[0].phoneNumber = '234567';
         return gContacts.updateContact(contact.id, contact, contact.etag);
       })
       .then(function (response) {
@@ -223,7 +228,7 @@ describe('GoogleContacts API', function () {
       })
       // read contact (again) to see if update was successfull
       .then(function (id) {
-        return gContacts.getSingleContact(id);
+        return gContacts.getSingleContact({id: id});
       })
       .then(function (response) {
         assert.isObject(response);

@@ -210,20 +210,52 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
 };
 
 
-GoogleContacts.prototype.getSingleContact = function (id, callback) {
+// Probably should rename that method.
+GoogleContacts.prototype.getSingleContact = function (options, callback) {
   var _this = this;
   var resolver;
+  var baseUrl;
 
-  if (!_.isString(id)) {
-    throw new Error('Invalid id argument; expected string, received ' + type(id));
+  // handle optional "options" param
+  if (_.isFunction(options)) {
+    callback = options;
+    options = {};
+  } else if (_.isUndefined(options)) {
+    options = {};
+  } else if (!_.isPlainObject(options)) {
+    throw new Error('Invalid options argument; expected object, received ' + type(options));
   }
+  // I am sure this can rewritten better.
+  if (_.isUndefined(options.id) && _.isUndefined(options.query)) {
+    throw new Error('Invalid options properties; Expected either an id or query ');
+  }
+
+  if (!_.isUndefined(options.id) && !_.isString(options.id)) {
+    throw new Error('Invalid id property; expected string, received ' + type(options.id));
+  }
+
+  if (!_.isUndefined(options.query) && !_.isString(options.query)) {
+    throw new Error('Invalid query property; expected string, received ' + type(options.query));
+  }
+
+  baseUrl = 'https://www.google.com/m8/feeds/contacts/default/full/';
+
+  if (!_.isUndefined(options.id)) {
+    baseUrl = url.resolve(baseUrl, options.id);
+  }
+
+  options = _.defaults(options, {
+    limit: 100,
+    offset: 0,
+    query: ''
+  });
 
   resolver = function (resolve, reject) {
     var params;
 
     params = {
       method: 'GET',
-      uri: url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', id),
+      uri: baseUrl,
       qs: {
         v: '3.0',
         alt: 'json'
@@ -231,6 +263,12 @@ GoogleContacts.prototype.getSingleContact = function (id, callback) {
       json: true,
       headers: {'Authorization': _this._tokenType + ' ' + _this._token}
     };
+
+    params.qs = _.extend(params.qs, {
+      'max-results': options.limit,
+      'start-index': options.offset + 1, // 1-based index
+      'q': options.query
+    });
 
     request(params, function (err, response, data) {
       var statusCode;
@@ -242,7 +280,17 @@ GoogleContacts.prototype.getSingleContact = function (id, callback) {
         return reject(new Error(data.error_description));
       }
 
-      resolve(formatResponse(data.entry));
+      // Should check here, because Google returns different format
+      // if single or multiple entries are returned.
+      if (!_.isUndefined(data.feed)) {
+        data = _.map(data.feed.entry, function (obj) {
+          return formatResponse(obj);
+        });
+      } else {
+        data = formatResponse(data.entry);
+      }
+
+      resolve(data);
     });
   };
 
