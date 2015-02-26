@@ -7,7 +7,13 @@ var _ = require('lodash');
 var Document = require('./Document');
 var formatResponse = require('./formatResponse');
 
-
+/**
+ * Creates a Google Contacts client.
+ * @param {Object} props client properties
+ * @param {String} props.clientId the cliend id obtained from the Developers Console
+ * @param {String} props.clientSecret the cliend secret obtained from the Developers Console
+ * @constructor
+ */
 function GoogleContacts(props) {
   if (!_.isPlainObject(props)) {
     throw new Error('Invalid props argument; expected object, received ' + type(props));
@@ -25,6 +31,15 @@ function GoogleContacts(props) {
   this._clientSecret = props.clientSecret;
 }
 
+/**
+ * Compiles and returns a URL to display OAuth dialog to the user.
+ * @see {@link https://developers.google.com/accounts/docs/OAuth2WebServer}
+ * @param {Object} options auth options
+ * @param {String} options.redirectUrl URL to redirect the user after authentication
+ * @param {String} [options.accessType=offline] indicates whether your app needs to access Google Contacts when the user is not present
+ * @param {String} [options.approvalPrompt=auto] indicates whether the user should be re-prompted for consent. The default is auto, so a given user should only see the consent page for a given set of scopes the first time through the sequence
+ * @return {String}
+ */
 GoogleContacts.prototype.getAuthUrl = function (options) {
   // validate options argument
   if (!_.isPlainObject(options)) {
@@ -33,7 +48,7 @@ GoogleContacts.prototype.getAuthUrl = function (options) {
 
   // validate redirectUrl option
   if (!isUrl(options.redirectUrl)) {
-    throw new Error('Invalid redirectUrl options; expected string, received ' + type(options.redirectUrl));
+    throw new Error('Invalid redirectUrl option; expected string, received ' + type(options.redirectUrl));
   }
 
   // set default options
@@ -41,6 +56,16 @@ GoogleContacts.prototype.getAuthUrl = function (options) {
     accessType: 'offline',
     approvalPrompt: 'auto'
   });
+
+  // validate accessType option
+  if (['offline', 'online'].indexOf(options.accessType) === -1) {
+    throw new Error('Invalid accessType option; expected "offile" or "online", received ' + type(options.accessType));
+  }
+
+  // validate approvalPrompt option
+  if (['auto', 'force'].indexOf(options.approvalPrompt) === -1) {
+    throw new Error('Invalid approvalPrompt option; expected "auto" or "force", received ' + type(options.approvalPrompt));
+  }
 
   // create and return URL
   return url.format({
@@ -58,58 +83,20 @@ GoogleContacts.prototype.getAuthUrl = function (options) {
   });
 };
 
-GoogleContacts.prototype.authorize = function (code, redirectUrl, callback) {
+/**
+ * Authorizes the client for offline access using the specified refresh token.
+ * @see {@link https://developers.google.com/accounts/docs/OAuth2WebServer}
+ * @param {String} refreshToken
+ * @param {Function} [callback] optional callback function
+ * @return {Promise}
+ */
+GoogleContacts.prototype.authorize = function(refreshToken, callback) {
   var _this = this;
   var resolver;
 
-  if (!_.isString(code)) {
-    throw new Error('Invalid code argument; expected string, received ' + type(code));
+  if (!_.isString(refreshToken)) {
+    throw new Error('Invalid refreshToken argument; expected string, received ' + type(refreshToken));
   }
-
-  if (!isUrl(redirectUrl)) {
-    throw new Error('Invalid redirectUrl argument; expected string, received ' + type(redirectUrl));
-  }
-
-  resolver = function (resolve, reject) {
-    var params;
-
-    params = {
-      method: 'POST',
-      uri: 'https://accounts.google.com/o/oauth2/token',
-      form: {
-        grant_type: 'authorization_code',
-        code: code,
-        client_id: _this._clientId,
-        client_secret: _this._clientSecret,
-        redirect_uri: redirectUrl
-      },
-      json: true
-    };
-
-    request(params, function (err, response, data) {
-      var statusCode = response.statusCode;
-
-      if (err) return reject(err);
-
-      statusCode = response.statusCode;
-      if (statusCode >= 400 || data.error_description) {
-        return reject(new Error(data.error_description));
-      }
-
-      // update client token
-      _this._token = data.access_token;
-      _this._tokenType = data.token_type;
-
-      resolve(data);
-    });
-  };
-
-  return new Promise(resolver).nodeify(callback);
-};
-
-GoogleContacts.prototype.authorizeOffline = function(refreshToken, callback) {
-  var _this = this;
-  var resolver;
 
   resolver = function (resolve, reject) {
     var params;
@@ -147,7 +134,15 @@ GoogleContacts.prototype.authorizeOffline = function(refreshToken, callback) {
   return new Promise(resolver).nodeify(callback);
 };
 
-
+/**
+ * Retreives contacts from Google Contacts.
+ * @param {Object} [options] retrieval options
+ * @param {String} [options.query] query to filter the contacts
+ * @param {Number} [options.limit=100] maximum number of contacts to return
+ * @param {Number} [options.offset=0] number of contacts to skip
+ * @param {Function} [callback] optional callback function with (err, contacts) arguments
+ * @return {Promise}
+ */
 GoogleContacts.prototype.getContacts = function (options, callback) {
   var _this = this;
   var resolver;
@@ -164,9 +159,15 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
 
   // set default options
   options = _.defaults(options, {
+    query: '',
     limit: 100,
     offset: 0
   });
+
+  // validate query option
+  if (!_.isString(options.query)) {
+    throw new Error('Invalid query option; expected string, received ' + type(options.query));
+  }
 
   resolver = function (resolve, reject) {
     var params;
@@ -184,6 +185,7 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
 
     // append options to querystring
     params.qs = _.extend(params.qs, {
+      'q': options.query,
       'max-results': options.limit,
       'start-index': options.offset + 1, // 1-based index
     });
@@ -210,52 +212,29 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
 };
 
 
-// Probably should rename that method.
-GoogleContacts.prototype.getSingleContact = function (options, callback) {
+/**
+ * Retrieves a single contact from Google Contacts.
+ * @param {String} id the contact id
+ * @param {Function} [callback] optional callback function with (err, date) arguments
+ * @return {Promise}
+ */
+GoogleContacts.prototype.getSingleContact = function (id, callback) {
   var _this = this;
   var resolver;
-  var baseUrl;
+  var uri;
 
-  // handle optional "options" param
-  if (_.isFunction(options)) {
-    callback = options;
-    options = {};
-  } else if (_.isUndefined(options)) {
-    options = {};
-  } else if (!_.isPlainObject(options)) {
-    throw new Error('Invalid options argument; expected object, received ' + type(options));
-  }
-  // I am sure this can rewritten better.
-  if (_.isUndefined(options.id) && _.isUndefined(options.query)) {
-    throw new Error('Invalid options properties; Expected either an id or query ');
+  if (!_.isString(id)) {
+    throw new Error('Invalid id property; expected string, received ' + type(id));
   }
 
-  if (!_.isUndefined(options.id) && !_.isString(options.id)) {
-    throw new Error('Invalid id property; expected string, received ' + type(options.id));
-  }
-
-  if (!_.isUndefined(options.query) && !_.isString(options.query)) {
-    throw new Error('Invalid query property; expected string, received ' + type(options.query));
-  }
-
-  baseUrl = 'https://www.google.com/m8/feeds/contacts/default/full/';
-
-  if (!_.isUndefined(options.id)) {
-    baseUrl = url.resolve(baseUrl, options.id);
-  }
-
-  options = _.defaults(options, {
-    limit: 100,
-    offset: 0,
-    query: ''
-  });
+  uri = url.resolve('https://www.google.com/m8/feeds/contacts/default/full/', id);
 
   resolver = function (resolve, reject) {
     var params;
 
     params = {
       method: 'GET',
-      uri: baseUrl,
+      uri: uri,
       qs: {
         v: '3.0',
         alt: 'json'
@@ -263,12 +242,6 @@ GoogleContacts.prototype.getSingleContact = function (options, callback) {
       json: true,
       headers: {'Authorization': _this._tokenType + ' ' + _this._token}
     };
-
-    params.qs = _.extend(params.qs, {
-      'max-results': options.limit,
-      'start-index': options.offset + 1, // 1-based index
-      'q': options.query
-    });
 
     request(params, function (err, response, data) {
       var statusCode;
@@ -280,24 +253,20 @@ GoogleContacts.prototype.getSingleContact = function (options, callback) {
         return reject(new Error(data.error_description));
       }
 
-      // Should check here, because Google returns different format
-      // if single or multiple entries are returned.
-      if (!_.isUndefined(data.feed)) {
-        data = _.map(data.feed.entry, function (obj) {
-          return formatResponse(obj);
-        });
-      } else {
-        data = formatResponse(data.entry);
-      }
-
-      resolve(data);
+      resolve(formatResponse(data.entry));
     });
   };
 
   return new Promise(resolver).nodeify(callback);
 };
 
-
+/**
+ * Deletes the designated contact from Google Contacts.
+ * @param {String} id the contact id
+ * @param {String} [etag]
+ * @param {Function} [callback] optional callback function with (err) arguments
+ * @return {Promise}
+ */
 GoogleContacts.prototype.deleteContact = function (id, etag, callback) {
   var _this = this;
   var resolver;
@@ -348,13 +317,18 @@ GoogleContacts.prototype.deleteContact = function (id, etag, callback) {
   return new Promise(resolver).nodeify(callback);
 };
 
-
-GoogleContacts.prototype.createContact = function (obj, callback) {
+/**
+ * Creates the given contact in Google Contacts.
+ * @param {Object} payload the contact payload
+ * @param {Function} [callback] optional callback function with (err, data) arguments.
+ * @return {Promise}
+ */
+GoogleContacts.prototype.createContact = function (payload, callback) {
   var _this = this;
   var resolver;
 
-  if (!_.isPlainObject(obj)) {
-    throw new Error('Invalid obj argument; expected object, received ' + type(obj));
+  if (!_.isPlainObject(payload)) {
+    throw new Error('Invalid payload argument; expected object, received ' + type(payload));
   }
 
   resolver = function (resolve, reject) {
@@ -371,7 +345,7 @@ GoogleContacts.prototype.createContact = function (obj, callback) {
         'Authorization': _this._tokenType + ' ' + _this._token,
         'Content-Type': 'application/atom+xml; charset=utf-8; type=feed'
       },
-      body: Document.fromJSON(obj)
+      body: Document.fromJSON(payload)
     };
 
     request(params, function (err, response, data) {
@@ -391,8 +365,15 @@ GoogleContacts.prototype.createContact = function (obj, callback) {
   return new Promise(resolver).nodeify(callback);
 };
 
-
-GoogleContacts.prototype.updateContact = function (id, obj, etag, callback) {
+/**
+ * Updates the designated contact with the given payload.
+ * @param {String} id the contact id
+ * @param {Object} payload the contact payload
+ * @param {String} [etag]
+ * @param {Function} [callback] optional callback function with (err, data) arguments
+ * @return {Promise}
+ */
+GoogleContacts.prototype.updateContact = function (id, payload, etag, callback) {
   var _this = this;
   var resolver;
 
@@ -400,8 +381,8 @@ GoogleContacts.prototype.updateContact = function (id, obj, etag, callback) {
     throw new Error('Invalid id argument; expected string, received ' + type(id));
   }
 
-  if (!_.isPlainObject(obj)) {
-    throw new Error('Invalid obj argument; expected object, received ' + type(obj));
+  if (!_.isPlainObject(payload)) {
+    throw new Error('Invalid payload argument; expected object, received ' + type(payload));
   }
 
   // handle optional etag argument
@@ -431,7 +412,7 @@ GoogleContacts.prototype.updateContact = function (id, obj, etag, callback) {
         'Content-Type': 'application/atom+xml; charset=utf-8; type=feed',
         'If-match': etag
       },
-      body: Document.fromJSON(obj)
+      body: Document.fromJSON(payload)
     };
 
     request(params, function (err, response, data) {
@@ -450,6 +431,5 @@ GoogleContacts.prototype.updateContact = function (id, obj, etag, callback) {
 
   return new Promise(resolver).nodeify(callback);
 };
-
 
 module.exports = GoogleContacts;
