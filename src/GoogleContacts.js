@@ -136,6 +136,8 @@ GoogleContacts.prototype.authorize = function(refreshToken, callback) {
 
 /**
  * Retreives contacts from Google Contacts.
+ * @see {@link https://developers.google.com/google-apps/contacts/v3/#retrieving_all_contacts}
+ * @see (@link https://developers.google.com/google-apps/contacts/v3/#retrieving_contacts_using_query_parameters}
  * @param {Object} [options] retrieval options
  * @param {String} [options.query] query to filter the contacts
  * @param {Number} [options.limit=100] maximum number of contacts to return
@@ -214,6 +216,7 @@ GoogleContacts.prototype.getContacts = function (options, callback) {
 
 /**
  * Retrieves a single contact from Google Contacts.
+ * @see {@link https://developers.google.com/google-apps/contacts/v3/#retrieving_a_single_contact}
  * @param {String} id the contact id
  * @param {Function} [callback] optional callback function with (err, date) arguments
  * @return {Promise}
@@ -262,6 +265,7 @@ GoogleContacts.prototype.getSingleContact = function (id, callback) {
 
 /**
  * Deletes the designated contact from Google Contacts.
+ * @see {@link https://developers.google.com/google-apps/contacts/v3/#deleting_contacts}
  * @param {String} id the contact id
  * @param {String} [etag]
  * @param {Function} [callback] optional callback function with (err) arguments
@@ -319,6 +323,7 @@ GoogleContacts.prototype.deleteContact = function (id, etag, callback) {
 
 /**
  * Creates the given contact in Google Contacts.
+ * @see {@link https://developers.google.com/google-apps/contacts/v3/#creating_contacts}
  * @param {Object} payload the contact payload
  * @param {Function} [callback] optional callback function with (err, data) arguments.
  * @return {Promise}
@@ -367,6 +372,7 @@ GoogleContacts.prototype.createContact = function (payload, callback) {
 
 /**
  * Updates the designated contact with the given payload.
+ * @see {@link https://developers.google.com/google-apps/contacts/v3/#updating_contacts}
  * @param {String} id the contact id
  * @param {Object} payload the contact payload
  * @param {String} [etag]
