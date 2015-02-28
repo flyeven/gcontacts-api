@@ -61,21 +61,22 @@ describe('GoogleContacts API', function () {
   describe('#authorize', function () {
 
     it('throws error when token is invalid', function () {
-      assert.throws(function () { gContacts.authorize(); }, /invalid code argument/i);
-      assert.throws(function () { gContacts.authorize(123); }, /invalid code argument/i);
-      assert.throws(function () { gContacts.authorize(true); }, /invalid code argument/i);
-      assert.throws(function () { gContacts.authorize(null); }, /invalid code argument/i);
-      assert.throws(function () { gContacts.authorize(new Date()); }, /invalid code argument/i);
+      assert.throws(function () { gContacts.authorize(); }, /invalid refreshToken argument/i);
+      assert.throws(function () { gContacts.authorize(123); }, /invalid refreshToken argument/i);
+      assert.throws(function () { gContacts.authorize(true); }, /invalid refreshToken argument/i);
+      assert.throws(function () { gContacts.authorize(null); }, /invalid refreshToken argument/i);
+      assert.throws(function () { gContacts.authorize(new Date()); }, /invalid refreshToken argument/i);
     });
 
-    it('throws error when redirectUrl is invalid', function () {
-      assert.throws(function () { gContacts.authorize('token'); }, /invalid redirectUrl argument/i);
-      assert.throws(function () { gContacts.authorize('token', 123); }, /invalid redirectUrl argument/i);
-      assert.throws(function () { gContacts.authorize('token', true); }, /invalid redirectUrl argument/i);
-      assert.throws(function () { gContacts.authorize('token', null); }, /invalid redirectUrl argument/i);
-      assert.throws(function () { gContacts.authorize('token', new Date()); }, /invalid redirectUrl argument/i);
-      assert.throws(function () { gContacts.authorize('token', 'string-not-url'); }, /invalid redirectUrl argument/i);
-    });
+    //  Have not removed them completely until we finilize method
+//  it('throws error when redirectUrl is invalid', function () {
+//    assert.throws(function () { gContacts.authorize('token'); }, /invalid redirectUrl argument/i);
+//    assert.throws(function () { gContacts.authorize('token', 123); }, /invalid redirectUrl argument/i);
+//    assert.throws(function () { gContacts.authorize('token', true); }, /invalid redirectUrl argument/i);
+//    assert.throws(function () { gContacts.authorize('token', null); }, /invalid redirectUrl argument/i);
+//    assert.throws(function () { gContacts.authorize('token', new Date()); }, /invalid redirectUrl argument/i);
+//    assert.throws(function () { gContacts.authorize('token', 'string-not-url'); }, /invalid redirectUrl argument/i);
+//  });
 
   });
 
@@ -93,15 +94,10 @@ describe('GoogleContacts API', function () {
   describe('#getSingleContact', function () {
 
     it('throws error when id is invalid', function () {
-      assert.throws(function () { gContacts.getSingleContact({}); }, /Invalid options properties/i);
-      assert.throws(function () { gContacts.getSingleContact({id: 123}); }, /invalid id property/i);
-      assert.throws(function () { gContacts.getSingleContact({id: true}); }, /invalid id property/i);
-      assert.throws(function () { gContacts.getSingleContact({id: null}); }, /invalid id property/i);
-      assert.throws(function () { gContacts.getSingleContact({id: new Date()}); }, /invalid id property/i);
-      assert.throws(function () { gContacts.getSingleContact({query: 123}); }, /invalid query property/i);
-      assert.throws(function () { gContacts.getSingleContact({query: true}); }, /invalid query property/i);
-      assert.throws(function () { gContacts.getSingleContact({query: null}); }, /invalid query property/i);
-      assert.throws(function () { gContacts.getSingleContact({query: new Date()}); }, /invalid query property/i);
+      assert.throws(function () { gContacts.getSingleContact(123); }, /invalid id property/i);
+      assert.throws(function () { gContacts.getSingleContact(true); }, /invalid id property/i);
+      assert.throws(function () { gContacts.getSingleContact(null); }, /invalid id property/i);
+      assert.throws(function () { gContacts.getSingleContact(new Date()); }, /invalid id property/i);
     });
 
   });
@@ -126,13 +122,13 @@ describe('GoogleContacts API', function () {
 
   describe('#createContact', function () {
 
-    it('throws error when obj is invalid', function () {
-      assert.throws(function () { gContacts.createContact(); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.createContact('string'); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.createContact(123); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.createContact(true); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.createContact(null); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.createContact(new Date()); }, /invalid obj argument/i);
+    it('throws error when payload is invalid', function () {
+      assert.throws(function () { gContacts.createContact(); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.createContact('string'); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.createContact(123); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.createContact(true); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.createContact(null); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.createContact(new Date()); }, /invalid payload argument/i);
     });
 
   });
@@ -146,12 +142,12 @@ describe('GoogleContacts API', function () {
       assert.throws(function () { gContacts.updateContact(new Date(), {}); }, /invalid id argument/i);
     });
 
-    it('throws error when obj is invalid', function () {
-      assert.throws(function () { gContacts.updateContact('contactId'); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.updateContact('contactId', 123); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.updateContact('contactId', true); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.updateContact('contactId', null); }, /invalid obj argument/i);
-      assert.throws(function () { gContacts.updateContact('contactId', new Date()); }, /invalid obj argument/i);
+    it('throws error when payload is invalid', function () {
+      assert.throws(function () { gContacts.updateContact('contactId'); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', 123); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', true); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', null); }, /invalid payload argument/i);
+      assert.throws(function () { gContacts.updateContact('contactId', new Date()); }, /invalid payload argument/i);
     });
 
     it('throws error when etag is invalid', function () {
@@ -165,7 +161,7 @@ describe('GoogleContacts API', function () {
 
   it('successfully completes a CRUD operation', function (done) {
     // authorize
-    gContacts.authorizeOffline(process.env.REFRESH_TOKEN)
+    gContacts.authorize(process.env.REFRESH_TOKEN)
       .then(function (response) {
         assert.isObject(response);
         assert.property(response, 'access_token');
@@ -207,7 +203,7 @@ describe('GoogleContacts API', function () {
       })
       // read created contact
       .spread(function (id, etag) {
-        return gContacts.getSingleContact({'id': id});
+        return gContacts.getSingleContact(id);
       })
       .then(function (response) {
         assert.isObject(response);
@@ -228,7 +224,7 @@ describe('GoogleContacts API', function () {
       })
       // read contact (again) to see if update was successfull
       .then(function (id) {
-        return gContacts.getSingleContact({id: id});
+        return gContacts.getSingleContact(id);
       })
       .then(function (response) {
         assert.isObject(response);
@@ -239,7 +235,7 @@ describe('GoogleContacts API', function () {
       // delete contact
       .spread(function (id, etag) {
         return gContacts.deleteContact(id, etag)
-          .then(function (response) {
+          .delay(3000).then(function (response) {
             assert.isUndefined(response);
           })
           .return();
